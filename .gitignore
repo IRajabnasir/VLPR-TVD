@@ -1,0 +1,22 @@
+# Python
+backend/venv/
+backend/.venv/
+__pycache__/
+*.pyc
+.env
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# OS
+.DS_Store
+
+# Runtime data
+backend/media/
+backend/db.sqlite3
+
+# Training artifacts (big, regenerable)
+backend/ai/datasets/
+backend/ai/runs/
+backend/ai/models/*.pt.backup

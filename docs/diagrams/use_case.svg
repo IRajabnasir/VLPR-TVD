@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" font-family="Helvetica, Arial, sans-serif" font-size="14">
+  <style>
+    .title { font-size: 20px; font-weight: bold; fill: #0f172a; }
+    .subtitle { font-size: 13px; fill: #475569; }
+    .actor-label { font-size: 14px; fill: #0f172a; font-weight: 600; text-anchor: middle; }
+    .uc-label { font-size: 14px; fill: #0f172a; text-anchor: middle; }
+    .boundary-label { font-size: 13px; fill: #334155; font-weight: 600; }
+    .boundary { fill: #f8fafc; stroke: #334155; stroke-width: 1.5; }
+    .uc { fill: #ffffff; stroke: #2563eb; stroke-width: 2; }
+    .actor { fill: none; stroke: #0f172a; stroke-width: 2; stroke-linecap: round; }
+    .link { stroke: #64748b; stroke-width: 1.5; fill: none; }
+  </style>
+
+  <!-- Title -->
+  <text x="450" y="35" class="title" text-anchor="middle">Use Case Diagram — VLPR-TVD</text>
+  <text x="450" y="55" class="subtitle" text-anchor="middle">Actor: Admin</text>
+
+  <!-- System boundary -->
+  <rect x="320" y="90" width="520" height="440" rx="12" class="boundary"/>
+  <text x="340" y="115" class="boundary-label">VLPR-TVD System</text>
+
+  <!-- Actor (stick figure) -->
+  <g transform="translate(130,260)">
+    <circle cx="0" cy="-40" r="16" class="actor"/>
+    <line x1="0" y1="-24" x2="0" y2="20" class="actor"/>
+    <line x1="-22" y1="-5" x2="22" y2="-5" class="actor"/>
+    <line x1="0" y1="20" x2="-18" y2="55" class="actor"/>
+    <line x1="0" y1="20" x2="18" y2="55" class="actor"/>
+    <text x="0" y="80" class="actor-label">Admin</text>
+  </g>
+
+  <!-- Use cases (ellipses) -->
+  <g>
+    <ellipse cx="560" cy="170" rx="120" ry="30" class="uc"/>
+    <text x="560" y="175" class="uc-label">Login</text>
+
+    <ellipse cx="560" cy="240" rx="120" ry="30" class="uc"/>
+    <text x="560" y="245" class="uc-label">Start Camera</text>
+
+    <ellipse cx="560" cy="310" rx="140" ry="30" class="uc"/>
+    <text x="560" y="315" class="uc-label">Detect Traffic Violation</text>
+
+    <ellipse cx="560" cy="380" rx="120" ry="30" class="uc"/>
+    <text x="560" y="385" class="uc-label">View Violations</text>
+
+    <ellipse cx="560" cy="450" rx="120" ry="30" class="uc"/>
+    <text x="560" y="455" class="uc-label">Logout</text>
+  </g>
+
+  <!-- Actor-to-usecase links -->
+  <line x1="150" y1="260" x2="440" y2="170" class="link"/>
+  <line x1="150" y1="260" x2="440" y2="240" class="link"/>
+  <line x1="150" y1="260" x2="420" y2="310" class="link"/>
+  <line x1="150" y1="260" x2="440" y2="380" class="link"/>
+  <line x1="150" y1="260" x2="440" y2="450" class="link"/>
+</svg>

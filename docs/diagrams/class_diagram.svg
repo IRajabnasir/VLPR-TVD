@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 760" font-family="Helvetica, Arial, sans-serif" font-size="12">
+  <style>
+    .title { font-size: 20px; font-weight: bold; fill: #0f172a; }
+    .subtitle { font-size: 13px; fill: #475569; }
+    .cls-header { font-size: 14px; font-weight: 700; fill: #0f172a; text-anchor: middle; }
+    .cls-box { fill: #ffffff; stroke: #2563eb; stroke-width: 1.8; }
+    .cls-band { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.8; }
+    .sep { stroke: #2563eb; stroke-width: 1.2; }
+    .field { fill: #0f172a; }
+    .method { fill: #0f172a; }
+    .edge { stroke: #334155; stroke-width: 1.6; fill: none; }
+    .edge-label { font-size: 11px; fill: #475569; }
+  </style>
+  <defs>
+    <!-- Plain arrow -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10" fill="none" stroke="#334155" stroke-width="1.4"/>
+    </marker>
+    <!-- Aggregation (open diamond) -->
+    <marker id="agg" viewBox="0 0 14 10" refX="14" refY="5" markerWidth="14" markerHeight="10" orient="auto">
+      <path d="M 0 5 L 7 0 L 14 5 L 7 10 z" fill="#ffffff" stroke="#334155" stroke-width="1.4"/>
+    </marker>
+  </defs>
+
+  <text x="560" y="32" class="title" text-anchor="middle">Design Class Diagram — VLPR-TVD</text>
+  <text x="560" y="52" class="subtitle" text-anchor="middle">Clean version (no stray "Job Listing" class, consistent naming)</text>
+
+  <!-- Admin -->
+  <g transform="translate(40,90)">
+    <rect width="220" height="140" class="cls-box"/>
+    <rect width="220" height="32" class="cls-band"/>
+    <text x="110" y="22" class="cls-header">Admin</text>
+    <line x1="0" y1="72" x2="220" y2="72" class="sep"/>
+    <text x="10" y="50" class="field">- adminId: int</text>
+    <text x="10" y="65" class="field">- username: string</text>
+    <text x="10" y="90" class="method">+ login(): bool</text>
+    <text x="10" y="105" class="method">+ logout(): void</text>
+    <text x="10" y="120" class="method">+ reviewViolations(): list</text>
+    <text x="10" y="135" class="method">+ manageCameras(): void</text>
+  </g>
+
+  <!-- Camera -->
+  <g transform="translate(320,90)">
+    <rect width="220" height="130" class="cls-box"/>
+    <rect width="220" height="32" class="cls-band"/>
+    <text x="110" y="22" class="cls-header">Camera</text>
+    <line x1="0" y1="82" x2="220" y2="82" class="sep"/>
+    <text x="10" y="50" class="field">- cameraId: int</text>
+    <text x="10" y="65" class="field">- location: string</text>
+    <text x="10" y="80" class="field">- status: string</text>
+    <text x="10" y="100" class="method">+ captureFrame(): Image</text>
+    <text x="10" y="115" class="method">+ setStatus(s): void</text>
+  </g>
+
+  <!-- AIModel -->
+  <g transform="translate(600,90)">
+    <rect width="220" height="130" class="cls-box"/>
+    <rect width="220" height="32" class="cls-band"/>
+    <text x="110" y="22" class="cls-header">AIModel</text>
+    <line x1="0" y1="82" x2="220" y2="82" class="sep"/>
+    <text x="10" y="50" class="field">- modelId: int</text>
+    <text x="10" y="65" class="field">- modelType: string</text>
+    <text x="10" y="80" class="field">- weightsPath: string</text>
+    <text x="10" y="100" class="method">+ analyzeFrame(img): Result</text>
+    <text x="10" y="115" class="method">+ detectPlate(img): string</text>
+  </g>
+
+  <!-- Vehicle -->
+  <g transform="translate(40,310)">
+    <rect width="220" height="120" class="cls-box"/>
+    <rect width="220" height="32" class="cls-band"/>
+    <text x="110" y="22" class="cls-header">Vehicle</text>
+    <line x1="0" y1="90" x2="220" y2="90" class="sep"/>
+    <text x="10" y="50" class="field">- vehicleId: int</text>
+    <text x="10" y="65" class="field">- plateNumber: string</text>
+    <text x="10" y="80" class="field">- vehicleType: string</text>
+    <text x="10" y="105" class="method">+ assignPlate(p): void</text>
+  </g>
+
+  <!-- LicensePlate -->
+  <g transform="translate(320,310)">
+    <rect width="220" height="120" class="cls-box"/>
+    <rect width="220" height="32" class="cls-band"/>
+    <text x="110" y="22" class="cls-header">LicensePlate</text>
+    <line x1="0" y1="90" x2="220" y2="90" class="sep"/>
+    <text x="10" y="50" class="field">- plateId: int</text>
+    <text x="10" y="65" class="field">- plateNumber: string</text>
+    <text x="10" y="80" class="field">- confidenceScore: float</text>
+    <text x="10" y="105" class="method">+ validate(): bool</text>
+  </g>
+
+  <!-- Violation -->
+  <g transform="translate(600,310)">
+    <rect width="240" height="170" class="cls-box"/>
+    <rect width="240" height="32" class="cls-band"/>
+    <text x="120" y="22" class="cls-header">Violation</text>
+    <line x1="0" y1="130" x2="240" y2="130" class="sep"/>
+    <text x="10" y="50" class="field">- violationId: int</text>
+    <text x="10" y="65" class="field">- type: string</text>
+    <text x="10" y="80" class="field">- fineAmount: decimal</text>
+    <text x="10" y="95" class="field">- location: string</text>
+    <text x="10" y="110" class="field">- status: Enum</text>
+    <text x="10" y="125" class="field">- createdAt: datetime</text>
+    <text x="10" y="150" class="method">+ review(): void</text>
+    <text x="10" y="165" class="method">+ complete(): void</text>
+  </g>
+
+  <!-- Evidence -->
+  <g transform="translate(880,310)">
+    <rect width="220" height="120" class="cls-box"/>
+    <rect width="220" height="32" class="cls-band"/>
+    <text x="110" y="22" class="cls-header">Evidence</text>
+    <line x1="0" y1="90" x2="220" y2="90" class="sep"/>
+    <text x="10" y="50" class="field">- evidenceId: int</text>
+    <text x="10" y="65" class="field">- imagePath: string</text>
+    <text x="10" y="80" class="field">- captureTime: datetime</text>
+    <text x="10" y="105" class="method">+ getImage(): Image</text>
+  </g>
+
+  <!-- Relationships -->
+  <!-- Admin -> reviews Violation -->
+  <path d="M 150 230 L 150 270 L 720 270 L 720 310" class="edge" marker-end="url(#arrow)"/>
+  <text x="420" y="262" class="edge-label">reviews</text>
+
+  <!-- Camera -> sends frames to AIModel -->
+  <line x1="540" y1="155" x2="600" y2="155" class="edge" marker-end="url(#arrow)"/>
+  <text x="548" y="148" class="edge-label">feeds</text>
+
+  <!-- AIModel -> creates Violation -->
+  <path d="M 710 220 L 710 310" class="edge" marker-end="url(#arrow)"/>
+  <text x="715" y="266" class="edge-label">creates</text>
+
+  <!-- Vehicle -> LicensePlate (aggregation) -->
+  <line x1="260" y1="370" x2="320" y2="370" class="edge" marker-end="url(#agg)"/>
+  <text x="265" y="363" class="edge-label">1..*</text>
+
+  <!-- Vehicle -> Violation (1..*) -->
+  <path d="M 260 395 L 600 395" class="edge" marker-end="url(#agg)"/>
+  <text x="395" y="388" class="edge-label">has</text>
+
+  <!-- Violation -> Evidence (1..*) aggregation -->
+  <line x1="840" y1="395" x2="880" y2="395" class="edge" marker-end="url(#agg)"/>
+  <text x="845" y="388" class="edge-label">1..*</text>
+
+  <!-- Legend -->
+  <g transform="translate(40,550)">
+    <text x="0" y="0" font-weight="700" fill="#0f172a">Legend</text>
+    <line x1="0" y1="20" x2="60" y2="20" class="edge" marker-end="url(#arrow)"/>
+    <text x="70" y="24" fill="#475569">association / navigability</text>
+    <line x1="0" y1="50" x2="60" y2="50" class="edge" marker-end="url(#agg)"/>
+    <text x="70" y="54" fill="#475569">aggregation ("whole – part")</text>
+  </g>
+
+  <!-- Key relationships recap -->
+  <g transform="translate(520,550)">
+    <text x="0" y="0" font-weight="700" fill="#0f172a">Key relationships</text>
+    <text x="0" y="22" fill="#475569">• Admin reviews Violation</text>
+    <text x="0" y="40" fill="#475569">• Camera feeds frames to AIModel</text>
+    <text x="0" y="58" fill="#475569">• AIModel creates Violation for a Vehicle</text>
+    <text x="0" y="76" fill="#475569">• Vehicle has 1..* LicensePlate reads</text>
+    <text x="0" y="94" fill="#475569">• Violation has 1..* Evidence images</text>
+  </g>
+</svg>

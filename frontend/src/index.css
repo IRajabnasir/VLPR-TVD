@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@keyframes glow {
+  0% { filter: drop-shadow(0 0 6px rgba(255,200,0,0.4)); }
+  50% { filter: drop-shadow(0 0 14px rgba(255,200,0,0.9)); }
+  100% { filter: drop-shadow(0 0 6px rgba(255,200,0,0.4)); }
+}
+
+.logo-glow {
+  animation: glow 3s infinite ease-in-out;
+}
+/* ===== WOW BACKGROUND ANIMATION ===== */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-30px); }
+  100% { transform: translateY(0px); }
+}
+
+.wow-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.wow-bg::before,
+.wow-bg::after {
+  content: "";
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.35;
+  animation: float 10s ease-in-out infinite;
+  z-index: 0;
+}
+
+.wow-bg::before {
+  background: #3b82f6;
+  top: -150px;
+  left: -150px;
+}
+
+.wow-bg::after {
+  background: #f59e0b;
+  bottom: -150px;
+  right: -150px;
+  animation-delay: 3s;
+}
+
+.wow-content {
+  position: relative;
+  z-index: 10;
+}
+
