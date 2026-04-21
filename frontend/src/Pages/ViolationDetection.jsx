@@ -395,6 +395,158 @@ export default function ViolationDetection() {
                       </span>
                     </div>
                   )}
+                  {lastDebug.plates_raw?.length > 0 && (
+                    <div className="mt-3">
+                      <div className="font-semibold text-[11px] uppercase tracking-wider">
+                        All detected plates ({lastDebug.plates_raw.length})
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {lastDebug.plates_raw.map((p, i) => (
+                          <div
+                            key={i}
+                            className="flex flex-col items-center bg-blue-50 border border-blue-200 rounded p-1"
+                          >
+                            {p.crop_url && (
+                              <a
+                                href={`http://127.0.0.1:8000${p.crop_url}`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <img
+                                  src={`http://127.0.0.1:8000${p.crop_url}`}
+                                  alt={`plate ${i}`}
+                                  className="h-8 border border-blue-300 rounded bg-white"
+                                />
+                              </a>
+                            )}
+                            <span
+                              className="text-[9px] font-mono text-blue-800 mt-0.5"
+                              title={`source: ${p.source}`}
+                            >
+                              📷 {p.conf} · {p.source}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-1">
+                        Every plate found in the frame. Only plates inside the
+                        offending vehicle's bbox are OCR'd — others (e.g. from
+                        other cars in view) are shown here but not used.
+                      </div>
+                    </div>
+                  )}
+                  {lastDebug.ocr_plates?.length > 0 && (
+                    <div className="mt-3">
+                      <div className="font-semibold text-[11px] uppercase tracking-wider">
+                        OCR results ({lastDebug.ocr_plates.length})
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {lastDebug.ocr_plates.map((p, i) => (
+                          <span
+                            key={i}
+                            className="text-[11px] font-mono rounded px-2 py-1 bg-emerald-100 text-emerald-900 font-bold"
+                            title={`conf: ${p.conf} · ${p.violation_type} · ${p.vehicle_type}`}
+                          >
+                            🔤 {p.plate}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {lastDebug.ocr_candidates?.length > 0 && (
+                    <div className="mt-3">
+                      <div className="font-semibold text-[11px] uppercase tracking-wider">
+                        All OCR attempts
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {lastDebug.ocr_candidates.map((c, i) => (
+                          <span
+                            key={i}
+                            className={`text-[10px] font-mono rounded px-1.5 py-0.5 ${
+                              c.accepted
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-slate-100 text-slate-500 line-through"
+                            }`}
+                            title={`variant: ${c.variant || "default"} · ${
+                              c.accepted
+                                ? "accepted"
+                                : "rejected (low conf or bad format)"
+                            }`}
+                          >
+                            {c.text} · {c.conf}
+                            {c.variant && (
+                              <span className="text-[9px] opacity-70 ml-1">
+                                ({c.variant})
+                              </span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {lastDebug.plate_match_log?.length > 0 && (
+                    <div className="mt-3">
+                      <div className="font-semibold text-[11px] uppercase tracking-wider">
+                        Plate-to-vehicle matching
+                      </div>
+                      <div className="mt-1 space-y-1">
+                        {lastDebug.plate_match_log.map((v, i) => (
+                          <div
+                            key={i}
+                            className={`text-[10px] rounded px-2 py-1 ${
+                              v.matched
+                                ? "bg-emerald-50 border border-emerald-200"
+                                : "bg-amber-50 border border-amber-200"
+                            }`}
+                          >
+                            <span className="font-semibold capitalize">
+                              {v.vehicle_type}
+                            </span>{" "}
+                            — {v.matched ? "plate matched ✓" : "no plate matched ✗"}
+                            {v.checks?.length > 0 && (
+                              <ul className="mt-1 ml-4 list-disc space-y-0.5 text-slate-600">
+                                {v.checks.map((c, j) => (
+                                  <li key={j} className="font-mono text-[9px]">
+                                    plate #{c.plate_index} (conf {c.plate_conf}) —{" "}
+                                    {c.result}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {lastDebug.plate_crops?.length > 0 && (
+                    <div className="mt-3">
+                      <div className="font-semibold text-[11px] uppercase tracking-wider">
+                        Plate crops sent to OCR
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {lastDebug.plate_crops.map((url, i) => (
+                          <a
+                            key={i}
+                            href={`http://127.0.0.1:8000${url}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="Open full size"
+                          >
+                            <img
+                              src={`http://127.0.0.1:8000${url}`}
+                              alt="plate crop"
+                              className="h-10 border border-slate-300 rounded bg-white hover:shadow-md transition"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-1">
+                        Click to open full size. If these look wrong or blurry,
+                        OCR can't fix it — the plate detection cropped the wrong
+                        region or the plate is too small.
+                      </div>
+                    </div>
+                  )}
                 </details>
               )}
             </div>
@@ -426,7 +578,17 @@ export default function ViolationDetection() {
                     </span>
                   </div>
                   <div className="mt-1 flex items-baseline justify-between">
-                    <div className="font-bold text-slate-900">{v.vehicle_plate}</div>
+                    <div
+                      className={
+                        v.vehicle_plate === "UNKNOWN"
+                          ? "text-sm italic text-slate-400"
+                          : "font-bold text-slate-900 font-mono tracking-wider"
+                      }
+                    >
+                      {v.vehicle_plate === "UNKNOWN"
+                        ? "Plate unreadable"
+                        : v.vehicle_plate}
+                    </div>
                     <div className="text-[10px] text-slate-500 capitalize">
                       {v.vehicle_type}
                     </div>

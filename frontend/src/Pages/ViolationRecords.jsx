@@ -198,10 +198,18 @@ export default function ViolationRecords() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="font-semibold text-slate-900">
-                      {v.vehicle_plate}
+                    <div
+                      className={`font-semibold ${
+                        v.vehicle_plate === "UNKNOWN"
+                          ? "text-slate-400 italic"
+                          : "font-mono tracking-wider text-slate-900 bg-amber-50 inline-block px-2 rounded border border-amber-200"
+                      }`}
+                    >
+                      {v.vehicle_plate === "UNKNOWN"
+                        ? "Plate not readable"
+                        : v.vehicle_plate}
                     </div>
-                    <div className="text-xs text-slate-500 font-mono">
+                    <div className="text-xs text-slate-500 font-mono mt-0.5">
                       #{v.id} · {v.camera_name || "—"}
                     </div>
                   </td>

@@ -229,6 +229,34 @@ Matches the D1 state chart exactly:
 Status values stored in DB: `detected`, `stored` (default on creation),
 `reviewed`, `completed`, `rejected`.
 
+## v1.1 model metrics (final)
+
+All three custom models were trained with transfer learning from YOLOv8n on
+public Roboflow datasets. Validation metrics on held-out sets:
+
+| Model            | Dataset                                      | Images | mAP50 | mAP50-95 |
+|------------------|----------------------------------------------|--------|-------|----------|
+| Helmet           | object-detection-using-yolov8 / helmet-detection-project | 761    | **0.933** | 0.665    |
+| Seatbelt         | seatbelttraining / seatbelt-detection        | 3,489  | **0.958** | 0.678    |
+| License plate    | ml-sdznj / yolov8-number-plate-detection     | 5,750  | **0.966** | 0.722    |
+
+Helmet model class breakdown: helmet 0.88 / license_plate 0.94 / motorcyclist 0.98.
+Seatbelt model class breakdown: seatbelt 0.989 / no-seatbelt 0.926.
+
+## OCR performance
+
+Over a 26-image test set covering diverse vehicles and plate styles (Indian,
+Pakistani civilian, military, jurisdiction-labelled):
+
+- **Perfect reads**: 5/20 close-up plates (CU409, LEB5786, AWA864, LEE246059, ACD10)
+- **Partial/close**: 2/20 (APE02 for APF023, TH953752 for HR593752)
+- **Unreadable**: small/low-resolution plates — documented limitation
+
+OCR pipeline uses EasyOCR with 6 preprocessing variants (CLAHE, Otsu, adaptive
+threshold, bilateral, inverted, plus gray baseline) + Tesseract as fallback.
+Multi-text plates (e.g. `PUNJAB LEE 24 6059`) are handled with a stopword
+stripper that removes jurisdiction labels before acceptance.
+
 ## Known limitations
 
 - Browser posts single frames to `/analyze/` — a periodic stream every N

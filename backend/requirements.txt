@@ -8,5 +8,6 @@ Pillow>=10.0
 opencv-python-headless>=4.8
 ultralytics>=8.0
 easyocr>=1.7
+pytesseract>=0.3.10  # fallback OCR (needs `brew install tesseract` on macOS)
 numpy>=1.24
 roboflow>=1.1  # only needed for training seatbelt.pt via ai/train_seatbelt.py
