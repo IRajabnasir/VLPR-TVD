@@ -89,6 +89,8 @@ class Violation(models.Model):
     fine_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     location = models.CharField(max_length=255, blank=True)
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, default="stored")
+    # v2: estimated speed in km/h (only set for over_speed violations; 0 otherwise)
+    speed_kmh = models.FloatField(default=0.0, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)

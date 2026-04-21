@@ -46,6 +46,7 @@ class ViolationSerializer(serializers.ModelSerializer):
             "camera", "camera_name",
             "violation_type",
             "fine_amount",
+            "speed_kmh",
             "location",
             "status",
             "created_at",

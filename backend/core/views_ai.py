@@ -14,11 +14,14 @@ from rest_framework.views import APIView
 from core.models import Camera, Vehicle, LicensePlate, Violation, Evidence
 from core.serializers import ViolationSerializer
 from ai.infer import analyze_image
+from ai.plate_voting import vote_for_plate
+from ai.vehicle_tracker import update_tracks, SPEED_LIMIT_KMH
 
 
 DEFAULT_FINE = {
     "no_helmet": 500,
     "no_seatbelt": 750,
+    "over_speed": 1000,
 }
 
 
@@ -37,13 +40,16 @@ class AnalyzeView(APIView):
             or "Browser Webcam"
         )
         location = request.data.get("location") or "Live Camera"
+        # Optional session_id enables frame-averaging / plate voting for live mode.
+        # Omit for single-image uploads.
+        session_id = request.data.get("session_id") or ""
 
         temp_path = default_storage.save(f"tmp/{img.name}", img)
         full_path = Path(default_storage.path(temp_path))
 
         debug = {}
         try:
-            results = analyze_image(full_path, debug=debug)
+            results = analyze_image(full_path, debug=debug, session_id=session_id)
         finally:
             try:
                 default_storage.delete(temp_path)
@@ -72,6 +78,16 @@ class AnalyzeView(APIView):
             confidence = float(r.get("confidence") or 0.0)
             fine = DEFAULT_FINE.get(violation_type, 500)
 
+            # v2: if a session_id was provided (live mode), run the plate
+            # through the voting buffer to benefit from multi-frame consensus
+            if session_id:
+                voted_plate, voted_conf = vote_for_plate(
+                    session_id, plate_number, confidence,
+                )
+                if voted_plate and voted_plate != "UNKNOWN":
+                    plate_number = voted_plate
+                    confidence = voted_conf
+
             vehicle, created_flag = Vehicle.objects.get_or_create(
                 plate_number=plate_number,
                 defaults={"owner_name": "UNKNOWN", "vehicle_type": vehicle_type},
@@ -95,6 +111,7 @@ class AnalyzeView(APIView):
                 fine_amount=fine,
                 location=location,
                 status="stored",
+                speed_kmh=float(r.get("speed_kmh") or 0.0),
             )
 
             evidence_path = r.get("evidence_url") or ""

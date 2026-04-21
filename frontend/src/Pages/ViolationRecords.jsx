@@ -19,6 +19,13 @@ const TYPE_LABELS = {
   other: "Other",
 };
 
+const TYPE_COLORS = {
+  no_helmet: "bg-red-100 text-red-800",
+  no_seatbelt: "bg-orange-100 text-orange-800",
+  over_speed: "bg-violet-100 text-violet-800",
+  red_light: "bg-amber-100 text-amber-800",
+};
+
 export default function ViolationRecords() {
   const [items, setItems] = useState([]);
   const [err, setErr] = useState("");
@@ -217,11 +224,20 @@ export default function ViolationRecords() {
                     {v.vehicle_type || "—"}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="font-semibold text-slate-800">
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                        TYPE_COLORS[v.violation_type] || "bg-slate-100 text-slate-700"
+                      }`}
+                    >
                       {TYPE_LABELS[v.violation_type] || v.violation_type}
                     </span>
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-slate-500 mt-1">
                       Fine: {v.fine_amount}
+                      {v.speed_kmh > 0 && (
+                        <span className="ml-2 font-mono text-violet-700">
+                          {v.speed_kmh.toFixed(0)} km/h
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-xs text-slate-600">

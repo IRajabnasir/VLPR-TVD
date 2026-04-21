@@ -31,6 +31,7 @@ flow is skipped, rather than throwing.
 from __future__ import annotations
 
 import logging
+import os
 import uuid
 from pathlib import Path
 from typing import Optional
@@ -45,7 +46,17 @@ BACKEND_DIR = AI_DIR.parent
 MEDIA_DIR = BACKEND_DIR / "media" / "violations"
 MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
-BASE_WEIGHTS = AI_DIR / "yolov8n.pt"          # COCO base model (vehicles + persons)
+# Base COCO model for vehicle + person detection.
+# v2 default is yolov8s (small) - noticeably better small-object recall
+# than yolov8n at ~2x CPU inference cost. Override via env:
+#   VLPR_BASE_MODEL=yolov8n.pt   # fastest, lowest accuracy
+#   VLPR_BASE_MODEL=yolov8s.pt   # v2 default - balanced (RECOMMENDED)
+#   VLPR_BASE_MODEL=yolov8m.pt   # higher accuracy, slow on CPU
+#   VLPR_BASE_MODEL=yolov11s.pt  # newer architecture, same class as v8s
+# Ultralytics auto-downloads whichever filename on first use.
+BASE_MODEL_NAME = os.environ.get("VLPR_BASE_MODEL", "yolov8s.pt")
+_local_base = AI_DIR / BASE_MODEL_NAME
+BASE_WEIGHTS = _local_base if _local_base.exists() else Path(BASE_MODEL_NAME)
 HELMET_WEIGHTS = AI_DIR / "models" / "helmet.pt"
 PLATE_WEIGHTS = AI_DIR / "models" / "license_plate.pt"
 SEATBELT_WEIGHTS = AI_DIR / "models" / "seatbelt.pt"  # may be missing - stub-ok
@@ -99,9 +110,24 @@ def _load_yolo(path: Path, required: bool = False):
 
 
 def _get_base_model():
+    """Load the base COCO model. Unlike the custom-trained helmet/seatbelt/plate
+    models, this is a standard pretrained checkpoint — we let ultralytics
+    auto-download it on first use if the file isn't local yet.
+    """
     global _base_model
     if _base_model is None:
-        _base_model = _load_yolo(BASE_WEIGHTS, required=False)
+        try:
+            from ultralytics import YOLO
+        except ImportError:
+            logger.warning("ultralytics not installed; base model unavailable")
+            _base_model = None
+            return None
+        try:
+            logger.info("Loading base YOLO model: %s", BASE_WEIGHTS)
+            _base_model = YOLO(str(BASE_WEIGHTS))
+        except Exception as e:
+            logger.warning("Base model load failed (%s); falling back to None", e)
+            _base_model = None
     return _base_model
 
 
@@ -752,12 +778,19 @@ def _save_evidence(img, annot_box=None, label: str = "") -> str:
 
 
 # --- Public API ----------------------------------------------------------
-def analyze_image(image_path: Path, debug: Optional[dict] = None) -> list[dict]:
+def analyze_image(
+    image_path: Path,
+    debug: Optional[dict] = None,
+    session_id: Optional[str] = None,
+) -> list[dict]:
     """Run both detection flows and return a list of violations (possibly empty).
 
     If a `debug` dict is passed, it will be populated with diagnostic info:
         motorcycles, cars, trucks, buses, persons, plates, helmet_worn,
         helmet_not_worn, seatbelt_mode, notes (list of string messages).
+
+    If `session_id` is passed, frame-to-frame vehicle tracking is enabled and
+    over_speed violations may be emitted (v2 feature).
     """
     if debug is None:
         debug = {}
@@ -982,6 +1015,50 @@ def analyze_image(image_path: Path, debug: Optional[dict] = None) -> list[dict]:
     debug["plate_crops"] = plate_crops
     # Per-vehicle plate matching decisions (for visibility on UI)
     debug["plate_match_log"] = plate_match_log
+
+    # ---------- v2: Frame-to-frame tracking + speed estimation ----------
+    # Only runs when a session_id is present (live camera mode).
+    if session_id:
+        try:
+            from ai.vehicle_tracker import update_tracks, SPEED_LIMIT_KMH
+            tracker_input = []
+            for vtype in ("motorcycle", "car", "truck", "bus"):
+                for v in detections[vtype]:
+                    tracker_input.append({"vehicle_type": vtype, "bbox": v[:4]})
+            tracked = update_tracks(session_id, tracker_input)
+            debug["tracks"] = [
+                {
+                    "track_id": t["track_id"],
+                    "vehicle_type": t["vehicle_type"],
+                    "speed_kmh": t["speed_kmh"],
+                    "is_over_speed": t["is_over_speed"],
+                }
+                for t in tracked
+            ]
+            # Emit over_speed violation for any tracked vehicle above the limit.
+            for t in tracked:
+                if not t["is_over_speed"]:
+                    continue
+                vbox = t["bbox"]
+                plate_box = _best_plate_for_vehicle(vbox, plates)
+                plate_number, plate_conf = ("UNKNOWN", 0.0)
+                if plate_box is not None:
+                    plate_number, plate_conf = _ocr_plate(
+                        img, plate_box,
+                        debug_ocr=ocr_candidates, debug_crops=plate_crops,
+                    )
+                url = _save_evidence(img, vbox, f"OVER SPEED {t['speed_kmh']:.0f} km/h")
+                violations.append({
+                    "violation_type": "over_speed",
+                    "vehicle_type": t["vehicle_type"],
+                    "plate_number": plate_number,
+                    "evidence_url": url,
+                    "confidence": plate_conf,
+                    "speed_kmh": t["speed_kmh"],
+                })
+            debug["speed_limit_kmh"] = SPEED_LIMIT_KMH
+        except Exception as e:
+            logger.debug("vehicle_tracker unavailable: %s", e)
 
     # Aggregate the final plate read(s) that ended up in violations (all flows)
     debug["ocr_plates"] = [

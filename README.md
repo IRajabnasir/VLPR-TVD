@@ -229,6 +229,39 @@ Matches the D1 state chart exactly:
 Status values stored in DB: `detected`, `stored` (default on creation),
 `reviewed`, `completed`, `rejected`.
 
+## v2.0 — new features over v1.1
+
+Tagged `v2.0` on the `v2` branch. Adds:
+
+- **Bigger base model** — `yolov8s` (up from `yolov8n`), better small-object
+  recall. Configurable via `VLPR_BASE_MODEL` env var.
+- **Frame-averaging OCR** — `ai/plate_voting.py`. Live camera mode sends a
+  stable `session_id` with each frame; the server maintains a rolling
+  30-second window of OCR reads per session and fuzzy-clusters them
+  (Levenshtein ≤ 2). Noisy reads converge to the correct plate across a
+  few frames. Unit-tested: 4 reads including one garbage outlier converged
+  on `GJ18DB4969` at 0.86 consensus confidence (up from 0.62 single-read).
+- **Speed estimation** — `ai/vehicle_tracker.py`. IoU+centroid frame-to-
+  frame matching identifies a vehicle across frames. Pixel velocity is
+  converted to km/h using a user-settable calibration
+  (`VLPR_PIXELS_PER_METER`, default 50). Over-the-limit tracks emit a new
+  `over_speed` violation type. Unit-tested: simulated 100 px/0.5s motion
+  → 143 km/h, triggers `over_speed=True` at 30 km/h limit.
+- **New `over_speed` violation type** and `speed_kmh` field on Violation
+  (migration `0004_violation_speed_kmh`).
+- **Frontend polish** — per-type coloured violation chips (no_helmet red,
+  no_seatbelt orange, over_speed violet), speed displayed in km/h next to
+  the vehicle type on both the live-detections sidebar and records table.
+
+v2 env-var knobs:
+
+    VLPR_BASE_MODEL           yolov8s.pt (default) | yolov8n.pt | yolov11s.pt
+    VLPR_PIXELS_PER_METER     50 (needs per-camera calibration for accurate km/h)
+    VLPR_SPEED_LIMIT_KMH      60
+    VLPR_SPEED_MIN_FRAMES     3
+    VLPR_TRACK_MAX_AGE_SEC    3.0
+    VLPR_IOU_MATCH_THRESHOLD  0.3
+
 ## v1.1 model metrics (final)
 
 All three custom models were trained with transfer learning from YOLOv8n on

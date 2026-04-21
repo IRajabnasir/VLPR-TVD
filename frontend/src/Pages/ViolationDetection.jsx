@@ -11,10 +11,21 @@ const LABELS = {
   other: "Other",
 };
 
+const LABEL_COLORS = {
+  no_helmet: "bg-red-100 text-red-700",
+  no_seatbelt: "bg-orange-100 text-orange-700",
+  over_speed: "bg-violet-100 text-violet-700",
+};
+
 const MODES = {
   CAMERA: "camera",
   UPLOAD: "upload",
 };
+
+// Stable per-mount session id for frame-averaging (v2). Regenerated when
+// the camera is stopped+started so each surveillance session is independent.
+const newSessionId = () =>
+  Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 export default function ViolationDetection() {
   const videoRef = useRef(null);
@@ -23,6 +34,7 @@ export default function ViolationDetection() {
   const [stream, setStream] = useState(null);
   const [isOn, setIsOn] = useState(false);
   const [error, setError] = useState("");
+  const [sessionId, setSessionId] = useState(() => newSessionId());
 
   // Upload-mode state
   const [uploadPreview, setUploadPreview] = useState(null); // data URL
@@ -50,6 +62,8 @@ export default function ViolationDetection() {
       setStream(s);
       setIsOn(true);
       setError("");
+      // Start a fresh voting window for this live session (v2 frame-averaging)
+      setSessionId(newSessionId());
     } catch {
       setError("Camera access denied or no camera available.");
     }
@@ -99,6 +113,11 @@ export default function ViolationDetection() {
     fd.append("image", blob, filename);
     fd.append("camera_name", mode === MODES.CAMERA ? "Browser Webcam" : "File Upload");
     fd.append("location", locationLabel);
+    // Only send session_id in camera mode to enable frame-averaging. In upload
+    // mode each image is independent so we skip voting.
+    if (mode === MODES.CAMERA && sessionId) {
+      fd.append("session_id", sessionId);
+    }
     const res = await api("/analyze/", { method: "POST", body: fd });
     return await res.json();
   };
@@ -573,7 +592,11 @@ export default function ViolationDetection() {
                 <div key={i} className="p-3 hover:bg-slate-50">
                   <div className="flex items-center justify-between">
                     <div className="font-mono text-xs text-slate-500">#{v.id}</div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-red-100 text-red-700">
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                        LABEL_COLORS[v.violation_type] || "bg-red-100 text-red-700"
+                      }`}
+                    >
                       {LABELS[v.violation_type] || v.violation_type}
                     </span>
                   </div>
@@ -591,6 +614,11 @@ export default function ViolationDetection() {
                     </div>
                     <div className="text-[10px] text-slate-500 capitalize">
                       {v.vehicle_type}
+                      {v.speed_kmh > 0 && (
+                        <span className="ml-1 font-mono text-violet-700">
+                          · {v.speed_kmh.toFixed(0)} km/h
+                        </span>
+                      )}
                     </div>
                   </div>
                   {v.evidence_url && (
